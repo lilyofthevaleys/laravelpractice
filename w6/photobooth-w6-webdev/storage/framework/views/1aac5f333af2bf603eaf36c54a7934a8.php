@@ -4,11 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pokémart - <?php echo $__env->yieldContent('title'); ?></title>
-    <link rel="icon" href="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='30' fill='%23ffffff' stroke='%231a1a1a' stroke-width='4'/%3E%3Cpath d='M2 32 a30 30 0 0 1 60 0 z' fill='%23ee1515' stroke='%231a1a1a' stroke-width='4'/%3E%3Crect x='0' y='28' width='64' height='8' fill='%231a1a1a'/%3E%3Ccircle cx='32' cy='32' r='8' fill='%23ffffff' stroke='%231a1a1a' stroke-width='3'/%3E%3Ccircle cx='32' cy='32' r='3' fill='%23ffffff' stroke='%231a1a1a' stroke-width='2'/%3E%3C/svg%3E">
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Plus+Jakarta+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
     <style>
         :root {
             --poke-red: #ee1515;
@@ -69,13 +71,61 @@
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
-            <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
-                <ul class="navbar-nav">
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav mx-auto align-items-lg-center">
                     <li class="nav-item"><a class="nav-link <?php echo e(Request::routeIs('home') ? 'active' : ''); ?>" href="<?php echo e(route('home')); ?>">Home</a></li>
                     <li class="nav-item"><a class="nav-link <?php echo e(Request::routeIs('shop') ? 'active' : ''); ?>" href="<?php echo e(route('shop')); ?>">Poké Shop</a></li>
                     <li class="nav-item"><a class="nav-link <?php echo e(Request::routeIs('about') ? 'active' : ''); ?>" href="<?php echo e(route('about')); ?>">About</a></li>
                     <li class="nav-item"><a class="nav-link <?php echo e(Request::routeIs('services') ? 'active' : ''); ?>" href="<?php echo e(route('services')); ?>">Trainer Plans</a></li>
                     <li class="nav-item"><a class="nav-link <?php echo e(Request::routeIs('contact') ? 'active' : ''); ?>" href="<?php echo e(route('contact')); ?>">Contact</a></li>
+                </ul>
+                <ul class="navbar-nav align-items-lg-center">
+                    <?php if(! (Auth::check() && Auth::user()->isAdmin())): ?>
+                        <?php $cartCount = \App\Services\Cart::count(); ?>
+                        <li class="nav-item">
+                            <a class="nav-link position-relative <?php echo e(Request::routeIs('cart.*') ? 'active' : ''); ?>" href="<?php echo e(route('cart.index')); ?>">
+                                <i class="bi bi-bag-fill me-1"></i>Cart
+                                <?php if($cartCount > 0): ?>
+                                    <span class="badge rounded-pill bg-light text-poke-red ms-1"><?php echo e($cartCount); ?></span>
+                                <?php endif; ?>
+                            </a>
+                        </li>
+                    <?php endif; ?>
+                    <?php if(auth()->guard()->check()): ?>
+                        <?php if(Auth::user()->isAdmin()): ?>
+                            <li class="nav-item me-lg-2">
+                                <a href="<?php echo e(route('admin.dashboard')); ?>" class="btn btn-light text-poke-red fw-bold px-3">
+                                    ← Back to Dashboard
+                                </a>
+                            </li>
+                        <?php endif; ?>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <?php echo e(Auth::user()->name); ?>
+
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><span class="dropdown-item-text small text-muted"><?php echo e(Auth::user()->email); ?></span></li>
+                                <li><span class="dropdown-item-text small text-muted">Role: <?php echo e(ucfirst(Auth::user()->role)); ?></span></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <?php if(Auth::user()->isAdmin()): ?>
+                                    <li><a class="dropdown-item" href="<?php echo e(route('admin.dashboard')); ?>">Admin Dashboard</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                <?php endif; ?>
+                                <li>
+                                    <form method="POST" action="<?php echo e(route('logout')); ?>" class="m-0">
+                                        <?php echo csrf_field(); ?>
+                                        <button type="submit" class="dropdown-item">Log out</button>
+                                    </form>
+                                </li>
+                            </ul>
+                        </li>
+                    <?php else: ?>
+                        <li class="nav-item"><a class="nav-link <?php echo e(Request::routeIs('login') ? 'active' : ''); ?>" href="<?php echo e(route('login')); ?>">Login</a></li>
+                        <li class="nav-item ms-lg-2">
+                            <a class="btn btn-light text-poke-red fw-bold px-3 <?php echo e(Request::routeIs('register') ? 'active' : ''); ?>" href="<?php echo e(route('register')); ?>">Sign Up</a>
+                        </li>
+                    <?php endif; ?>
                 </ul>
             </div>
         </div>

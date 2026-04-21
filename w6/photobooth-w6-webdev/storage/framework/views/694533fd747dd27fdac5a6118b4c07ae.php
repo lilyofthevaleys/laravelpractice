@@ -19,7 +19,7 @@
                                 <h4 class="my-0 fw-bold mt-2"><?php echo e($package['name']); ?></h4>
                             </div>
                             <div class="card-body bg-white text-center d-flex flex-column">
-                                <h1 class="card-title pricing-card-title h3 text-poke-red fw-bold"><?php echo e($package['price']); ?><small class="text-muted fw-light fs-6"><?php echo e($package['duration']); ?></small></h1>
+                                <h1 class="card-title pricing-card-title h3 text-poke-red fw-bold"><?php echo e($package['price_label']); ?><small class="text-muted fw-light fs-6"><?php echo e($package['duration_label']); ?></small></h1>
                                 <ul class="list-unstyled mt-3 mb-4 text-start">
                                     <?php $__currentLoopData = $package['features']; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $index => $feature): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                                         <li class="py-2 <?php echo e($index < count($package['features']) - 1 ? 'border-bottom' : ''); ?> text-dark">
@@ -28,7 +28,15 @@
                                         </li>
                                     <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                                 </ul>
-                                <button type="button" class="w-100 btn btn-lg <?php echo e($package['is_popular'] ? 'btn-poke' : 'btn-poke-outline'); ?> mt-auto"><?php echo e($package['btn_text']); ?></button>
+                                <?php if(auth()->guard()->check()): ?>
+                                    <?php if(Auth::user()->isAdmin()): ?>
+                                        <button type="button" class="w-100 btn btn-lg btn-secondary mt-auto" disabled title="Admins can't subscribe">Admin Account</button>
+                                    <?php else: ?>
+                                        <a href="<?php echo e(route('subscription.confirm', $package['key'])); ?>" class="w-100 btn btn-lg <?php echo e($package['is_popular'] ? 'btn-poke' : 'btn-poke-outline'); ?> mt-auto"><?php echo e($package['btn_text']); ?></a>
+                                    <?php endif; ?>
+                                <?php else: ?>
+                                    <a href="<?php echo e(route('subscription.confirm', $package['key'])); ?>" class="w-100 btn btn-lg <?php echo e($package['is_popular'] ? 'btn-poke' : 'btn-poke-outline'); ?> mt-auto"><?php echo e($package['btn_text']); ?></a>
+                                <?php endif; ?>
                             </div>
                         </div>
                     </div>

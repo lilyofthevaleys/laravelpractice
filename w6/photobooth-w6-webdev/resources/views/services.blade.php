@@ -21,7 +21,7 @@
                                 <h4 class="my-0 fw-bold mt-2">{{ $package['name'] }}</h4>
                             </div>
                             <div class="card-body bg-white text-center d-flex flex-column">
-                                <h1 class="card-title pricing-card-title h3 text-poke-red fw-bold">{{ $package['price'] }}<small class="text-muted fw-light fs-6">{{ $package['duration'] }}</small></h1>
+                                <h1 class="card-title pricing-card-title h3 text-poke-red fw-bold">{{ $package['price_label'] }}<small class="text-muted fw-light fs-6">{{ $package['duration_label'] }}</small></h1>
                                 <ul class="list-unstyled mt-3 mb-4 text-start">
                                     @foreach ($package['features'] as $index => $feature)
                                         <li class="py-2 {{ $index < count($package['features']) - 1 ? 'border-bottom' : '' }} text-dark">
@@ -29,7 +29,15 @@
                                         </li>
                                     @endforeach
                                 </ul>
-                                <button type="button" class="w-100 btn btn-lg {{ $package['is_popular'] ? 'btn-poke' : 'btn-poke-outline' }} mt-auto">{{ $package['btn_text'] }}</button>
+                                @auth
+                                    @if (Auth::user()->isAdmin())
+                                        <button type="button" class="w-100 btn btn-lg btn-secondary mt-auto" disabled title="Admins can't subscribe">Admin Account</button>
+                                    @else
+                                        <a href="{{ route('subscription.confirm', $package['key']) }}" class="w-100 btn btn-lg {{ $package['is_popular'] ? 'btn-poke' : 'btn-poke-outline' }} mt-auto">{{ $package['btn_text'] }}</a>
+                                    @endif
+                                @else
+                                    <a href="{{ route('subscription.confirm', $package['key']) }}" class="w-100 btn btn-lg {{ $package['is_popular'] ? 'btn-poke' : 'btn-poke-outline' }} mt-auto">{{ $package['btn_text'] }}</a>
+                                @endauth
                             </div>
                         </div>
                     </div>

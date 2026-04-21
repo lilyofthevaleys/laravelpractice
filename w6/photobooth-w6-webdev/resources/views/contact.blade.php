@@ -14,42 +14,51 @@
                             <p class="mb-0 text-white-50 mt-2">Questions? Custom orders? Need a specific Pokémon? Drop us a line.</p>
                         </div>
                         <div class="card-body p-4 p-md-5 bg-white">
-                            <form action="#" method="POST">
+                            <form action="{{ route('contact.submit') }}" method="POST" novalidate>
                                 @csrf
                                 <div class="row g-3">
                                     <div class="col-md-6">
-                                        <div class="form-floating mb-3">
-                                            <input type="text" class="form-control" id="nameInput" name="name" placeholder="Ash Ketchum" required>
+                                        <div class="form-floating mb-1">
+                                            <input type="text" class="form-control @error('name') is-invalid @enderror" id="nameInput" name="name" value="{{ old('name') }}" placeholder="Ash Ketchum" required>
                                             <label for="nameInput">Trainer Name</label>
                                         </div>
+                                        @error('name')
+                                            <div class="invalid-feedback d-block mb-2">{{ $message }}</div>
+                                        @enderror
                                     </div>
                                     <div class="col-md-6">
-                                        <div class="form-floating mb-3">
-                                            <input type="email" class="form-control" id="emailInput" name="email" placeholder="ash@pallet.town" required>
+                                        <div class="form-floating mb-1">
+                                            <input type="email" class="form-control @error('email') is-invalid @enderror" id="emailInput" name="email" value="{{ old('email') }}" placeholder="ash@pallet.town" required>
                                             <label for="emailInput">Email Address</label>
                                         </div>
+                                        @error('email')
+                                            <div class="invalid-feedback d-block mb-2">{{ $message }}</div>
+                                        @enderror
                                     </div>
                                     <div class="col-12">
-                                        <div class="form-floating mb-3">
-                                            <select class="form-select" id="packageSelect" name="package">
-                                                <option selected disabled>What are you interested in?</option>
-                                                <option>Buying a specific Pokémon</option>
-                                                <option>Rookie Trainer plan</option>
-                                                <option>Gym Challenger plan</option>
-                                                <option>Elite Four Prep plan</option>
-                                                <option>Custom / legendary request</option>
-                                                <option>Something else</option>
+                                        <div class="form-floating mb-1">
+                                            <select class="form-select @error('package') is-invalid @enderror" id="packageSelect" name="package" required>
+                                                <option value="" disabled {{ old('package') ? '' : 'selected' }}>What are you interested in?</option>
+                                                @foreach ($topics as $topic)
+                                                    <option value="{{ $topic }}" {{ old('package') === $topic ? 'selected' : '' }}>{{ $topic }}</option>
+                                                @endforeach
                                             </select>
                                             <label for="packageSelect">Topic</label>
                                         </div>
+                                        @error('package')
+                                            <div class="invalid-feedback d-block mb-2">{{ $message }}</div>
+                                        @enderror
                                     </div>
                                     <div class="col-12">
-                                        <div class="form-floating mb-4">
-                                            <textarea class="form-control" placeholder="Tell us what you're looking for" id="messageInput" name="message" style="height: 150px" required></textarea>
+                                        <div class="form-floating mb-1">
+                                            <textarea class="form-control @error('message') is-invalid @enderror" placeholder="Tell us what you're looking for" id="messageInput" name="message" style="height: 150px" required>{{ old('message') }}</textarea>
                                             <label for="messageInput">Your Message</label>
                                         </div>
+                                        @error('message')
+                                            <div class="invalid-feedback d-block mb-3">{{ $message }}</div>
+                                        @enderror
                                     </div>
-                                    <div class="col-12 text-center">
+                                    <div class="col-12 text-center mt-3">
                                         <button type="submit" class="btn btn-poke btn-lg w-100 rounded-pill shadow-sm">Send Message</button>
                                     </div>
                                 </div>

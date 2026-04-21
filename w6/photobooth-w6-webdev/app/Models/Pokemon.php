@@ -19,5 +19,10 @@ class Pokemon extends Model
         'stock',
         'details',
         'image_path',
+        'is_best_seller',
+    ];
+
+    protected $casts = [
+        'is_best_seller' => 'boolean',
     ];
 }
