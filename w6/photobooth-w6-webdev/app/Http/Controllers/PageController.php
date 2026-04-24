@@ -55,7 +55,18 @@ class PageController extends Controller
             'general'      => 'General Items',
         ];
 
-        return view('shop', compact('pokemons', 'items', 'category', 'filters'));
+        $favouritedPokemonIds = collect();
+        $favouritedItemIds = collect();
+        if ($user = $request->user()) {
+            $favouritedPokemonIds = $user->favourites()
+                ->where('favouritable_type', Pokemon::class)
+                ->pluck('favouritable_id');
+            $favouritedItemIds = $user->favourites()
+                ->where('favouritable_type', Item::class)
+                ->pluck('favouritable_id');
+        }
+
+        return view('shop', compact('pokemons', 'items', 'category', 'filters', 'favouritedPokemonIds', 'favouritedItemIds'));
     }
 
     public function home()
@@ -120,7 +131,7 @@ class PageController extends Controller
         return view('about');
     }
 
-    public function services()
+    public function services(Request $request)
     {
         $packages = collect(Subscription::PLANS)
             ->map(fn ($plan, $key) => array_merge($plan, [
@@ -130,7 +141,13 @@ class PageController extends Controller
             ->values()
             ->all();
 
-        return view('services', compact('packages'));
+        $user = $request->user();
+        $activeSub = $user && ! $user->isAdmin() ? $user->activeSubscription() : null;
+        $pendingSub = $user && ! $user->isAdmin() && ! $activeSub ? $user->pendingSubscription() : null;
+        $activePlanKey = $activeSub?->planKey();
+        $pendingPlanKey = $pendingSub?->planKey();
+
+        return view('services', compact('packages', 'activeSub', 'activePlanKey', 'pendingSub', 'pendingPlanKey'));
     }
 
     public function contact()

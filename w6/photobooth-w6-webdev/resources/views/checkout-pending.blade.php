@@ -43,19 +43,26 @@
 
                         @if ($snapReady)
                             <button type="button" id="pay-button" class="btn btn-poke btn-lg w-100 mb-2">Pay</button>
-                            <a href="{{ route('shop') }}" class="btn btn-link w-100">Continue shopping</a>
+                            <a href="{{ route('shop') }}" class="btn btn-link w-100 mb-2">Continue shopping</a>
                         @elseif ($isPending && ! \App\Services\Midtrans::configured())
                             <div class="alert alert-warning text-start small mb-3">
                                 Midtrans isn't configured yet. Set <code>MIDTRANS_SERVER_KEY</code> and <code>MIDTRANS_CLIENT_KEY</code> in <code>.env</code> — the Pay button will show up here.
                             </div>
-                            <a href="{{ route('shop') }}" class="btn btn-poke">Continue Shopping</a>
+                            <a href="{{ route('shop') }}" class="btn btn-poke w-100 mb-2">Continue Shopping</a>
                         @elseif ($isPending)
                             <div class="alert alert-danger text-start small mb-3">
                                 We couldn't prepare the payment session. Please try again in a moment or contact support.
                             </div>
-                            <a href="{{ route('shop') }}" class="btn btn-poke">Continue Shopping</a>
+                            <a href="{{ route('shop') }}" class="btn btn-poke w-100 mb-2">Continue Shopping</a>
                         @else
-                            <a href="{{ route('shop') }}" class="btn btn-poke">Continue Shopping</a>
+                            <a href="{{ route('shop') }}" class="btn btn-poke w-100">Continue Shopping</a>
+                        @endif
+
+                        @if ($isPending)
+                            <form method="POST" action="{{ route('orders.cancel', $transaction) }}" class="mt-2" onsubmit="return confirm('Cancel this order? This cannot be undone.');">
+                                @csrf
+                                <button type="submit" class="btn btn-outline-danger w-100">Cancel order</button>
+                            </form>
                         @endif
                     </div>
                 </div>

@@ -5,6 +5,10 @@ use App\Http\Controllers\PageController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CheckoutController;
+use App\Http\Controllers\FavouriteController;
+use App\Http\Controllers\OrderController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\TransactionController;
 use App\Http\Controllers\Admin\UserController;
@@ -46,6 +50,19 @@ Route::middleware('auth')->group(function () {
     Route::get('/checkout', [CheckoutController::class, 'show'])->name('checkout.show');
     Route::post('/checkout', [CheckoutController::class, 'process'])->name('checkout.process');
     Route::get('/checkout/{transaction}/pending', [CheckoutController::class, 'pending'])->name('checkout.pending');
+
+    Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
+    Route::post('/orders/{transaction}/cancel', [OrderController::class, 'cancel'])->name('orders.cancel');
+
+    Route::get('/favourites', [FavouriteController::class, 'index'])->name('favourites.index');
+    Route::post('/favourites/{type}/{id}', [FavouriteController::class, 'toggle'])
+        ->whereIn('type', ['pokemon', 'item'])->whereNumber('id')->name('favourites.toggle');
+
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+
+    Route::get('/settings', [SettingsController::class, 'edit'])->name('settings.edit');
+    Route::patch('/settings/password', [SettingsController::class, 'updatePassword'])->name('settings.password');
 
     Route::get('/subscribe/{plan}', [CustomerSubscriptionController::class, 'confirm'])->name('subscription.confirm');
     Route::post('/subscribe/{plan}', [CustomerSubscriptionController::class, 'subscribe'])->name('subscription.subscribe');

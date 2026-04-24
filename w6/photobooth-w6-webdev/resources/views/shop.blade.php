@@ -64,8 +64,23 @@
                     <div class="col-md-6 col-lg-4">
                         <div class="card h-100 poke-card shadow-sm position-relative">
                             @if ($pokemon->is_best_seller)
-                                <span class="badge bg-warning text-dark position-absolute top-0 end-0 m-2 fw-bold shadow-sm" style="border: 1px solid #1a1a1a;">★ Best Seller</span>
+                                <span class="badge bg-warning text-dark position-absolute top-0 end-0 m-2 fw-bold shadow-sm" style="border: 1px solid #1a1a1a; z-index: 2;">★ Best Seller</span>
                             @endif
+                            @auth
+                                @if (! Auth::user()->isAdmin())
+                                    @php $isFav = $favouritedPokemonIds->contains($pokemon->id); @endphp
+                                    <form method="POST" action="{{ route('favourites.toggle', ['pokemon', $pokemon->id]) }}" class="position-absolute" style="top: 8px; left: 8px; z-index: 2;">
+                                        @csrf
+                                        <button type="submit" class="btn btn-light btn-sm rounded-circle shadow-sm d-flex align-items-center justify-content-center p-0" style="width: 36px; height: 36px; border: 1px solid #1a1a1a;" title="{{ $isFav ? 'Remove from favourites' : 'Add to favourites' }}">
+                                            <i class="bi bi-heart{{ $isFav ? '-fill text-poke-red' : '' }}"></i>
+                                        </button>
+                                    </form>
+                                @endif
+                            @else
+                                <a href="{{ route('login') }}" class="btn btn-light btn-sm rounded-circle shadow-sm position-absolute d-flex align-items-center justify-content-center p-0" style="top: 8px; left: 8px; z-index: 2; width: 36px; height: 36px; border: 1px solid #1a1a1a;" title="Log in to favourite">
+                                    <i class="bi bi-heart"></i>
+                                </a>
+                            @endauth
                             <div class="d-flex justify-content-center align-items-center" style="background: #f4f4f4; height: 220px;">
                                 <img src="{{ $img }}" alt="{{ $pokemon->name }}" style="max-height: 200px; max-width: 90%; object-fit: contain;">
                             </div>
@@ -119,8 +134,23 @@
                     <div class="col-md-6 col-lg-4">
                         <div class="card h-100 poke-card shadow-sm position-relative">
                             @if ($item->is_best_seller)
-                                <span class="badge bg-warning text-dark position-absolute top-0 end-0 m-2 fw-bold shadow-sm" style="border: 1px solid #1a1a1a;">★ Best Seller</span>
+                                <span class="badge bg-warning text-dark position-absolute top-0 end-0 m-2 fw-bold shadow-sm" style="border: 1px solid #1a1a1a; z-index: 2;">★ Best Seller</span>
                             @endif
+                            @auth
+                                @if (! Auth::user()->isAdmin())
+                                    @php $isFav = $favouritedItemIds->contains($item->id); @endphp
+                                    <form method="POST" action="{{ route('favourites.toggle', ['item', $item->id]) }}" class="position-absolute" style="top: 8px; left: 8px; z-index: 2;">
+                                        @csrf
+                                        <button type="submit" class="btn btn-light btn-sm rounded-circle shadow-sm d-flex align-items-center justify-content-center p-0" style="width: 36px; height: 36px; border: 1px solid #1a1a1a;" title="{{ $isFav ? 'Remove from favourites' : 'Add to favourites' }}">
+                                            <i class="bi bi-heart{{ $isFav ? '-fill text-poke-red' : '' }}"></i>
+                                        </button>
+                                    </form>
+                                @endif
+                            @else
+                                <a href="{{ route('login') }}" class="btn btn-light btn-sm rounded-circle shadow-sm position-absolute d-flex align-items-center justify-content-center p-0" style="top: 8px; left: 8px; z-index: 2; width: 36px; height: 36px; border: 1px solid #1a1a1a;" title="Log in to favourite">
+                                    <i class="bi bi-heart"></i>
+                                </a>
+                            @endauth
                             <div class="d-flex justify-content-center align-items-center" style="background: #f4f4f4; height: 220px;">
                                 <img src="{{ $imgItem }}" alt="{{ $item->name }}" style="height: 180px; width: auto; object-fit: contain; image-rendering: pixelated; image-rendering: -moz-crisp-edges; image-rendering: crisp-edges;">
                             </div>

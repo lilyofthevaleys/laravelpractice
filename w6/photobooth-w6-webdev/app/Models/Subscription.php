@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Subscription extends Model
 {
+    public const STATUS_PENDING = 'pending';
     public const STATUS_ACTIVE = 'active';
     public const STATUS_EXPIRED = 'expired';
     public const STATUS_CANCELLED = 'cancelled';
@@ -84,5 +85,27 @@ class Subscription extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function planKey(): ?string
+    {
+        foreach (self::PLANS as $key => $plan) {
+            if ($plan['name'] === $this->plan_name) {
+                return $key;
+            }
+        }
+        return null;
+    }
+
+    public function isCurrentlyActive(): bool
+    {
+        return $this->status === self::STATUS_ACTIVE
+            && $this->ends_at
+            && $this->ends_at->isFuture();
+    }
+
+    public function isAwaitingPayment(): bool
+    {
+        return $this->status === self::STATUS_PENDING;
     }
 }

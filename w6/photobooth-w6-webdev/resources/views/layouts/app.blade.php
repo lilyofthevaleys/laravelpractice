@@ -92,6 +92,14 @@
                         </li>
                     @endif
                     @auth
+                        @php
+                            $pendingCount = ! Auth::user()->isAdmin()
+                                ? Auth::user()->transactions()
+                                    ->where('status', \App\Models\Transaction::STATUS_PENDING)
+                                    ->count()
+                                : 0;
+                            $activeSub = ! Auth::user()->isAdmin() ? Auth::user()->activeSubscription() : null;
+                        @endphp
                         @if (Auth::user()->isAdmin())
                             <li class="nav-item me-lg-2">
                                 <a href="{{ route('admin.dashboard') }}" class="btn btn-light text-poke-red fw-bold px-3">
@@ -100,21 +108,66 @@
                             </li>
                         @endif
                         <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <a class="nav-link dropdown-toggle position-relative" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                 {{ Auth::user()->name }}
+                                @if ($pendingCount > 0)
+                                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-warning text-dark border border-light" style="margin-top: 0.4rem; margin-left: -0.2rem; font-size: 0.65rem;">
+                                        {{ $pendingCount }}
+                                        <span class="visually-hidden">pending orders</span>
+                                    </span>
+                                @endif
                             </a>
-                            <ul class="dropdown-menu dropdown-menu-end">
+                            <ul class="dropdown-menu dropdown-menu-end" style="min-width: 260px;">
                                 <li><span class="dropdown-item-text small text-muted">{{ Auth::user()->email }}</span></li>
                                 <li><span class="dropdown-item-text small text-muted">Role: {{ ucfirst(Auth::user()->role) }}</span></li>
+                                @if (! Auth::user()->isAdmin())
+                                    <li>
+                                        <span class="dropdown-item-text small">
+                                            @if ($activeSub)
+                                                <span class="badge bg-success text-white me-1"><i class="bi bi-patch-check-fill"></i></span>
+                                                <strong>{{ $activeSub->plan_name }}</strong>
+                                                <div class="text-muted">Active until {{ $activeSub->ends_at->format('d M Y') }}</div>
+                                            @else
+                                                <span class="badge bg-secondary text-white me-1">—</span>
+                                                <span class="text-muted">No active plan</span>
+                                                <div><a href="{{ route('services') }}" class="small">Browse trainer plans →</a></div>
+                                            @endif
+                                        </span>
+                                    </li>
+                                @endif
                                 <li><hr class="dropdown-divider"></li>
                                 @if (Auth::user()->isAdmin())
-                                    <li><a class="dropdown-item" href="{{ route('admin.dashboard') }}">Admin Dashboard</a></li>
-                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item" href="{{ route('admin.dashboard') }}"><i class="bi bi-speedometer2 me-2"></i>Admin Dashboard</a></li>
+                                @else
+                                    <li>
+                                        <a class="dropdown-item d-flex align-items-center justify-content-between {{ Request::routeIs('profile.*') ? 'active' : '' }}" href="{{ route('profile.edit') }}">
+                                            <span><i class="bi bi-person-fill me-2"></i>Profile</span>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item d-flex align-items-center justify-content-between {{ Request::routeIs('orders.*') ? 'active' : '' }}" href="{{ route('orders.index') }}">
+                                            <span><i class="bi bi-receipt-cutoff me-2"></i>My Orders</span>
+                                            @if ($pendingCount > 0)
+                                                <span class="badge rounded-pill bg-warning text-dark">{{ $pendingCount }} pending</span>
+                                            @endif
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item {{ Request::routeIs('favourites.*') ? 'active' : '' }}" href="{{ route('favourites.index') }}">
+                                            <i class="bi bi-heart-fill me-2 text-poke-red"></i>Favourites
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item {{ Request::routeIs('settings.*') ? 'active' : '' }}" href="{{ route('settings.edit') }}">
+                                            <i class="bi bi-gear-fill me-2"></i>Settings
+                                        </a>
+                                    </li>
                                 @endif
+                                <li><hr class="dropdown-divider"></li>
                                 <li>
                                     <form method="POST" action="{{ route('logout') }}" class="m-0">
                                         @csrf
-                                        <button type="submit" class="dropdown-item">Log out</button>
+                                        <button type="submit" class="dropdown-item"><i class="bi bi-box-arrow-right me-2"></i>Log out</button>
                                     </form>
                                 </li>
                             </ul>

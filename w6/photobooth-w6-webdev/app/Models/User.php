@@ -43,4 +43,34 @@ class User extends Authenticatable
     {
         return $this->hasMany(Subscription::class);
     }
+
+    public function activeSubscription(): ?Subscription
+    {
+        return $this->subscriptions()
+            ->where('status', Subscription::STATUS_ACTIVE)
+            ->where('ends_at', '>', now())
+            ->latest('ends_at')
+            ->first();
+    }
+
+    public function pendingSubscription(): ?Subscription
+    {
+        return $this->subscriptions()
+            ->where('status', Subscription::STATUS_PENDING)
+            ->latest()
+            ->first();
+    }
+
+    public function favourites(): HasMany
+    {
+        return $this->hasMany(Favourite::class);
+    }
+
+    public function hasFavourited(\Illuminate\Database\Eloquent\Model $buyable): bool
+    {
+        return $this->favourites()
+            ->where('favouritable_type', $buyable::class)
+            ->where('favouritable_id', $buyable->getKey())
+            ->exists();
+    }
 }

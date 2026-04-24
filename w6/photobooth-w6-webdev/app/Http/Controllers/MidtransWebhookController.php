@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Subscription;
 use App\Models\Transaction;
 use App\Services\Midtrans;
 use Illuminate\Http\JsonResponse;
@@ -69,12 +70,44 @@ class MidtransWebhookController extends Controller
 
         $transaction->forceFill($updates)->save();
 
+        $this->syncSubscription($transaction, $newStatus);
+
         Log::info('Midtrans notification processed', [
             'order_id' => $orderId,
             'status'   => $newStatus,
         ]);
 
         return response()->json(['message' => 'OK']);
+    }
+
+    private function syncSubscription(Transaction $transaction, string $newStatus): void
+    {
+        $subscriptionItem = $transaction->items()
+            ->where('buyable_type', Subscription::class)
+            ->first();
+
+        if (! $subscriptionItem) {
+            return;
+        }
+
+        $subscription = Subscription::find($subscriptionItem->buyable_id);
+        if (! $subscription) {
+            return;
+        }
+
+        if ($newStatus === Transaction::STATUS_PAID) {
+            $plan = Subscription::findPlan($subscription->planKey() ?? '');
+            $days = $plan['duration_days'] ?? 30;
+            $subscription->update([
+                'status'    => Subscription::STATUS_ACTIVE,
+                'starts_at' => now(),
+                'ends_at'   => now()->addDays($days),
+            ]);
+        } elseif (in_array($newStatus, [Transaction::STATUS_FAILED, Transaction::STATUS_CANCELLED], true)) {
+            if ($subscription->status === Subscription::STATUS_PENDING) {
+                $subscription->update(['status' => Subscription::STATUS_CANCELLED]);
+            }
+        }
     }
 
     private function mapStatus(?string $txStatus, ?string $fraudStatus): ?string

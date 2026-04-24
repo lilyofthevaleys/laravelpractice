@@ -22,6 +22,21 @@ class SubscriptionController extends Controller
                 ->with('success', 'Admins manage subscriptions, they don\'t buy them.');
         }
 
+        if ($active = $request->user()->activeSubscription()) {
+            return redirect()->route('services')
+                ->with('success', "You're already on {$active->plan_name} until {$active->ends_at->format('d M Y')}.");
+        }
+
+        if ($pending = $request->user()->pendingSubscription()) {
+            $pendingTx = Transaction::whereHas('items', function ($q) use ($pending) {
+                $q->where('buyable_type', Subscription::class)->where('buyable_id', $pending->id);
+            })->where('status', Transaction::STATUS_PENDING)->latest()->first();
+            if ($pendingTx) {
+                return redirect()->route('checkout.pending', $pendingTx)
+                    ->with('success', "You have a pending subscription to {$pending->plan_name}. Complete payment to activate.");
+            }
+        }
+
         return view('subscribe-confirm', [
             'planKey'  => $plan,
             'plan'     => $planData,
@@ -39,14 +54,29 @@ class SubscriptionController extends Controller
                 ->with('success', 'Admins manage subscriptions, they don\'t buy them.');
         }
 
+        if ($active = $request->user()->activeSubscription()) {
+            return redirect()->route('services')
+                ->with('success', "You already have an active {$active->plan_name} plan until {$active->ends_at->format('d M Y')}.");
+        }
+
+        if ($pending = $request->user()->pendingSubscription()) {
+            $pendingTx = Transaction::whereHas('items', function ($q) use ($pending) {
+                $q->where('buyable_type', Subscription::class)->where('buyable_id', $pending->id);
+            })->where('status', Transaction::STATUS_PENDING)->latest()->first();
+            if ($pendingTx) {
+                return redirect()->route('checkout.pending', $pendingTx)
+                    ->with('success', "Finish paying for your pending {$pending->plan_name} subscription first.");
+            }
+        }
+
         $transaction = DB::transaction(function () use ($request, $planData) {
             $subscription = Subscription::create([
                 'user_id'   => $request->user()->id,
                 'plan_name' => $planData['name'],
                 'price'     => $planData['price'],
-                'status'    => Subscription::STATUS_ACTIVE,
-                'starts_at' => now(),
-                'ends_at'   => now()->addDays($planData['duration_days']),
+                'status'    => Subscription::STATUS_PENDING,
+                'starts_at' => null,
+                'ends_at'   => null,
             ]);
 
             $t = Transaction::create([
